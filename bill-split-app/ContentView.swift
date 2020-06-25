@@ -1,26 +1,71 @@
 //
 //  ContentView.swift
-//  bill-split-app
+//  WeSplit
 //
-//  Created by Arnav on 22/07/23.
+//  Created by William Martin on 12/11/2020.
 //
 
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+  @State private var checkAmount = ""
+  @State private var numberOfPeople = 2
+  @State private var tipPercentage = 2
+  
+  let tipPercentages = [10, 15, 20, 25, 0]
+  
+  var totalPerPerson: Double {
+    let peopleCount = Double(numberOfPeople + 2)
+    let tipSelection = Double(tipPercentages[tipPercentage])
+    let orderAmount = Double(checkAmount) ?? 0
+    
+    let tipValue = orderAmount / 100 * tipSelection
+    let grandTotal = orderAmount + tipValue
+    let amountPerPerson = grandTotal / peopleCount
+    
+    return amountPerPerson
+  }
+  
+  var body: some View {
+    NavigationView {
+      Form {
+        Section {
+          TextField("Amount: ", text: $checkAmount)
+            .keyboardType(.decimalPad)
         }
-        .padding()
+        
+        Picker("Number of people", selection: $numberOfPeople){
+          ForEach(2 ..< 100) {
+            Text("\($0) people")
+          }
+        }.keyboardType(.decimalPad)
+        
+        Section(header: Text("How much tip do you want to leave.")) {
+          
+          Picker("Tip percentage", selection: $tipPercentage) {
+            ForEach(0 ..< tipPercentages.count) {
+              Text("\(self.tipPercentages[$0])%")
+            }
+          }.pickerStyle(SegmentedPickerStyle())
+        }
+        
+        Section(header: Text("Total amount with tip")) {
+          Text("\(totalPerPerson * Double(numberOfPeople + 2), specifier: "%.2f")")
+            .foregroundColor(tipPercentage == 4 ? Color.red : Color.black)
+        }
+        
+        Section(header: Text("Amount per person")) {
+          Text("\(totalPerPerson, specifier: "%.2f")")
+        }
+      }
+      .navigationBarTitle("Split Your Bill")
     }
+  }
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+  static var previews: some View {
+    ContentView()
+  }
 }
+
